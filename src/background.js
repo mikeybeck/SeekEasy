@@ -35,9 +35,11 @@ const calculateRange = async (url) => {
         const maxSalary = await getMaxSalary(jobId, minRange, maxRange);
         const minSalary = await getMinSalary(jobId, minRange, maxSalary);
 
+        const notes = job.id + ': ' + job.title;
+
         if (minSalary && maxSalary) {
             const range = `$${minSalary.toLocaleString()} - $${maxSalary.toLocaleString()}`;
-            cacheJob(jobId, job.title, job.companyName, minSalary, maxSalary, range);
+            cacheJob(jobId, job.title, job.companyName, minSalary, maxSalary, range, notes);
             return range;
         }
     } else {
@@ -159,7 +161,7 @@ const getJob = async (jobId, min, max) => {
     }
 };
 
-const cacheJob = (jobId, title, company, minimum, maximum, range) => {
+const cacheJob = (jobId, title, company, minimum, maximum, range, notes) => {
     try {
         const currentDate = new Date().getTime();
         const job = {
@@ -169,6 +171,7 @@ const cacheJob = (jobId, title, company, minimum, maximum, range) => {
             minimum: minimum,
             maximum: maximum,
             range: range,
+            notes: notes,
             created: currentDate,
             version: constants.version
         };
@@ -241,6 +244,7 @@ const checkJobType = async (tabId, url) => {
                 const createdToday = cachedJob && getDifferenceInDays(new Date().getTime(), cachedJob.created) === 0; // Use cache for jobs viewed on the same day.
 
                 if (isCurrent && createdToday) {
+                    console.table(cachedJob);
                     console.log(`Cached salary range is ${cachedJob.range}`);
                     sendMessage(tabId, 'update-placeholder', cachedJob.range);
                 } else {
@@ -248,6 +252,9 @@ const checkJobType = async (tabId, url) => {
                     console.log(`Salary range is ${range}`);
                     sendMessage(tabId, 'update-placeholder', range);
                 }
+
+                // Update notes on job
+                sendMessage(tabId, 'update-notes', cachedJob ? cachedJob.notes : "")
             } catch (exception) {
                 sendMessage(tabId, 'update-placeholder', cachedJob ? cachedJob.range : `Failed to calculate salary range: ${exception.message}`);
             }

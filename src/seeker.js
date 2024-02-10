@@ -3,7 +3,7 @@ const selectors = {
     legacySalaryRange: "legacy-salary-range-value",
 };
 
-const addPlaceholder = (text) => {
+const addPlaceholder = (text, notes) => {
     const elements = document.querySelectorAll("span");
     for (const element of elements) {
         if (element.innerText.includes('Posted')) {
@@ -11,28 +11,65 @@ const addPlaceholder = (text) => {
             div.style.marginTop = "10px";
 
             const span = document.createElement("span");
-            span.id = selectors.salaryRange;
-            span.innerText = `Salary (estimated): ${text}`;
-            span.style.fontSize = "16px";
-            span.style.lineHeight = "24px";
-            span.style.fontFamily = "SeekSans, \"SeekSans Fallback\", Arial, sans-serif";
 
-            div.append(span);
+            if (text !== null) {
+                span.id = selectors.salaryRange;
+                span.innerText = `Salary (estimated): ${text}`;
+                span.style.fontSize = "16px";
+                span.style.lineHeight = "24px";
+                span.style.fontFamily = "SeekSans, \"SeekSans Fallback\", Arial, sans-serif";
+
+                div.append(span);
+            }
+
+            if (notes) {
+                const notesSpan = document.createElement("span");
+                notesSpan.id = selectors.salaryRange + "-notes";
+                notesSpan.innerText = `Notes: ${notes}`;
+                notesSpan.style.fontSize = "16px";
+                notesSpan.style.lineHeight = "24px";
+                notesSpan.style.fontFamily = "SeekSans, \"SeekSans Fallback\", Arial, sans-serif";
+
+                div.append(notesSpan);
+
+                const notesTextArea = document.createElement("textarea");
+                notesTextArea.id = selectors.salaryRange + "-notes-textarea";
+                notesTextArea.style.width = "100%";
+                notesTextArea.style.height = "100px";
+                notesTextArea.style.marginTop = "10px";
+                notesTextArea.value = notes;
+
+                // Insert button: <button type="button" className="btn btn-primary save-button" id="saveButton">Save</button>
+                const saveButton = document.createElement("button");
+                saveButton.type = "button";
+                saveButton.className = "btn btn-primary save-button";
+                saveButton.id = selectors.salaryRange +  "-notes-save-button";
+                saveButton.innerText = "Save";
+
+                saveButton.onclick = () => {
+                    const notes = document.getElementById(selectors.salaryRange + "-notes-textarea").value;
+                    chrome.runtime.sendMessage({ message: "update-notes", result: notes });
+                }
+
+                div.append(notesTextArea);
+                div.append(saveButton);
+            }
+
             element.parentElement.before(div);
         }
     }
 };
 
 // Seek seems to be doing a/b testing so try and support both for now
-const showSalary = async (value) => {
+const showSalary = async (value, notes = '') => {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     try {
-        addPlaceholder(value);
+        addPlaceholder(value, notes);
     } catch (exception) {
     }
     try {
-        updateLegacyPlaceholder(value);
+        updateLegacyPlaceholder(value, notes);
     } catch (exception) {
     }
 }
@@ -60,7 +97,7 @@ const addLegacyPlaceholder = () => {
     }
 };
 
-const updateLegacyPlaceholder = (text) => {
+const updateLegacyPlaceholder = (text, notes) => {
     // Wait for a max of 2 seconds for career insights to load before adding the placeholder.
     let elapsed = 0;
     const interval = setInterval(() => {
@@ -83,5 +120,10 @@ chrome.runtime.onMessage.addListener((request) => {
     if (request.message === "update-placeholder") {
         console.log(`Salary range: ${request.result}`);
         request.result ? showSalary(request.result) : showSalary("Error downloading salary.");
+    }
+
+    if (request.message === "update-notes") {
+        console.log(`NOTES: ${request.result}`);
+        request.result ? showSalary(null, request.result) : showSalary("Error showing notes.");
     }
 });
