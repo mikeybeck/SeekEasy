@@ -167,7 +167,7 @@ const cacheJob = (jobId, title, company, minimum, maximum, range) => {
             title: title,
             company: company,
             minimum: minimum,
-            maxiumum: maximum,
+            maximum: maximum,
             range: range,
             created: currentDate,
             version: constants.version
