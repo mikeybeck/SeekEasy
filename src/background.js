@@ -207,9 +207,9 @@ const sendMessage = (tabId, message, result) => {
 };
 
 const handleScriptInjection = (tabId, url) => {
-    if (!isSupportedUrl(url)) {
-        return;
-    }
+    // if (!isSupportedUrl(url)) {
+    //     return;
+    // }
 
     chrome.scripting.executeScript(
         {
@@ -224,7 +224,20 @@ const handleScriptInjection = (tabId, url) => {
             // Seeker is already injected.
             if (response[0]) {
                 console.log("Seeker already injected.")
-                checkJobType(tabId, url);
+                if (isJobUrl(url) || isExpiredJobUrl(url)) {
+                    checkJobType(tabId, url);
+                } else {
+                    console.log("Not a job url.  Need to check if it's a search page.");
+                    if (isSearchPage(url)) {
+                        console.log("It's a search page.");
+                        // Run search page function
+                        // ...
+                        chrome.scripting.executeScript({
+                            target: {tabId: tabId},
+                            files: ['search.js']
+                        });
+                    }
+                }
             } else {
                 chrome.scripting.executeScript({
                     target: {tabId: tabId},
@@ -234,6 +247,27 @@ const handleScriptInjection = (tabId, url) => {
         }
     );
 };
+
+// async function updateJobsOnSearchPage(tabId, url) {
+//     // Get all job IDs from the search page.
+//     const jobIds = await getJobIdsFromSearchPage(url);
+//     console.log(`Job IDs: ${jobIds}`);
+//     // Get all job details from the search page.
+//     const jobDetails = await getJobDetails(jobIds);
+//     console.log(`Job details: ${jobDetails}`);
+//     // Update the cache with the job details.
+//     updateCache(jobDetails);
+//     // Update the UI with the job details.
+//     updateUI(tabId, jobDetails);
+// }
+//
+// async function getJobIdsFromSearchPage(url) {
+//     // Get all job IDs from the search page.
+//     const response = await fetch(url);
+//     const text = await response.text();
+//     const jobIds = text.match(/job\/\d+/g);
+//     return jobIds;
+// }
 
 const checkJobType = async (tabId, url) => {
     // Use cache for same day jobs, expired jobs, and exceptions.
@@ -283,7 +317,11 @@ const isJobUrl = url => url.toLowerCase().includes("/job/");
 
 const isExpiredJobUrl = url => url.toLowerCase().includes("/expiredjob/");
 
-const isSupportedUrl = url => isJobUrl(url) || isExpiredJobUrl(url);
+function isSearchPage(url) {
+    return url.toLowerCase().includes("jobs"); // Not great but seems to be the best we can do from the URL.
+}
+
+// const isSupportedUrl = url => isJobUrl(url) || isExpiredJobUrl(url);
 
 // Handle job access by site navigation, new tab, and page refresh.
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {

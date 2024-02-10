@@ -38,7 +38,8 @@
         "https://*.seek.co.nz/*"
       ],
       "js": [
-        "seeker.js"
+        "seeker.js",
+        "search.js"
       ],
       "run_at": "document_start"
     }
