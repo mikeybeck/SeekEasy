@@ -3,7 +3,7 @@ const selectors = {
     legacySalaryRange: "legacy-salary-range-value",
 };
 
-const addPlaceholder = (text, notes) => {
+const addPlaceholder = (text, job) => {
     const elements = document.querySelectorAll("span");
     for (const element of elements) {
         if (element.innerText.includes('Posted')) {
@@ -22,22 +22,22 @@ const addPlaceholder = (text, notes) => {
                 div.append(span);
             }
 
-            if (notes) {
-                const notesSpan = document.createElement("span");
-                notesSpan.id = selectors.salaryRange + "-notes";
-                notesSpan.innerText = `Notes: ${notes}`;
-                notesSpan.style.fontSize = "16px";
-                notesSpan.style.lineHeight = "24px";
-                notesSpan.style.fontFamily = "SeekSans, \"SeekSans Fallback\", Arial, sans-serif";
-
-                div.append(notesSpan);
+            if (job) {
+                // const notesSpan = document.createElement("span");
+                // notesSpan.id = selectors.salaryRange + "-notes";
+                // notesSpan.innerText = `Notes: ${job.notes}`;
+                // notesSpan.style.fontSize = "16px";
+                // notesSpan.style.lineHeight = "24px";
+                // notesSpan.style.fontFamily = "SeekSans, \"SeekSans Fallback\", Arial, sans-serif";
+                //
+                // div.append(notesSpan);
 
                 const notesTextArea = document.createElement("textarea");
                 notesTextArea.id = selectors.salaryRange + "-notes-textarea";
                 notesTextArea.style.width = "100%";
                 notesTextArea.style.height = "100px";
                 notesTextArea.style.marginTop = "10px";
-                notesTextArea.value = notes;
+                notesTextArea.value = job.notes;
 
                 // Insert button: <button type="button" className="btn btn-primary save-button" id="saveButton">Save</button>
                 const saveButton = document.createElement("button");
@@ -47,8 +47,8 @@ const addPlaceholder = (text, notes) => {
                 saveButton.innerText = "Save";
 
                 saveButton.onclick = () => {
-                    const notes = document.getElementById(selectors.salaryRange + "-notes-textarea").value;
-                    chrome.runtime.sendMessage({ message: "update-notes", result: notes });
+                    job.notes = document.getElementById(selectors.salaryRange + "-notes-textarea").value;
+                    updateNotes(job);
                 }
 
                 div.append(notesTextArea);
@@ -127,3 +127,13 @@ chrome.runtime.onMessage.addListener((request) => {
         request.result ? showSalary(null, request.result) : showSalary("Error showing notes.");
     }
 });
+
+function updateNotes(job) {
+    console.log(`NOTES2: ${job}`);
+    chrome.runtime.sendMessage({
+        message: "update-notes2",
+        result: job,
+    });
+    // sendMessage('update-notes2', cachedJob ? cachedJob.notes : "")
+    // showSalary(null, job.notes);
+}

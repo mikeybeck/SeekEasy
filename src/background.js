@@ -254,7 +254,7 @@ const checkJobType = async (tabId, url) => {
                 }
 
                 // Update notes on job
-                sendMessage(tabId, 'update-notes', cachedJob ? cachedJob.notes : "")
+                sendMessage(tabId, 'update-notes', cachedJob ? cachedJob : {});
             } catch (exception) {
                 sendMessage(tabId, 'update-placeholder', cachedJob ? cachedJob.range : `Failed to calculate salary range: ${exception.message}`);
             }
@@ -289,5 +289,13 @@ const isSupportedUrl = url => isJobUrl(url) || isExpiredJobUrl(url);
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.status === "complete" && tab.url) {
         handleScriptInjection(tabId, tab.url);
+    }
+});
+
+chrome.runtime.onMessage.addListener((request) => {
+    if (request.message === "update-notes2") {
+        console.log(`NOTES3: ${request.result}`);
+        request.result ? cacheJob(request.result.id, request.result.title, request.result.company, request.result.minimum, request.result.maximum, request.result.range, request.result.notes) : console.log("Error updating notes.");
+        // request.result ? showSalary(null, request.result) : showSalary("Error showing notes.");
     }
 });
