@@ -232,17 +232,18 @@ const handleScriptInjection = (tabId, url) => {
                         console.log("It's a search page.");
                         // Run search page function
                         // ...
-                        chrome.scripting.executeScript({
-                            target: {tabId: tabId},
-                            files: ['search.js']
-                        });
+                        updateSearchPage(tabId, url);
                     }
                 }
             } else {
                 chrome.scripting.executeScript({
                     target: {tabId: tabId},
-                    files: ['seeker.js']
+                    files: ['seeker.js', 'search.js']
                 });
+                // chrome.scripting.executeScript({
+                //     target: {tabId: tabId},
+                //     files: ['search.js']
+                // });
             }
         }
     );
@@ -268,6 +269,10 @@ const handleScriptInjection = (tabId, url) => {
 //     const jobIds = text.match(/job\/\d+/g);
 //     return jobIds;
 // }
+
+const updateSearchPage = async (tabId, url) => {
+    sendMessage(tabId, 'update-search-placeholder', "Calculating...");
+}
 
 const checkJobType = async (tabId, url) => {
     // Use cache for same day jobs, expired jobs, and exceptions.

@@ -1,9 +1,85 @@
+const constants = {
+    cacheKey: "jobs",
+};
+
 chrome.runtime.onMessage.addListener((request) => {
     if (request.message === "update-search-placeholder") {
-        console.log(`Salary range: ${request.result}`);
+        console.log(`Salary range (search page): ${request.result}`);
+        // const cachedJobs = getCachedJobs();
+        const cachedJobs = getCachedJobs(async (jobs) => {
+            // console.table(jobs);
+            // getJobsOnPage().forEach(job => {
+            //     const existingJobIndex = jobs.findIndex(x => x.id === job.id);
+            //     if (existingJobIndex === -1) {
+            //         jobs.push(job);
+            //     } else {
+            //         jobs[existingJobIndex] = job;
+            //     }
+            // });
+
+            // return jobs;
+            updateSearchPage(jobs);
+        });
+
+        console.table(cachedJobs);
         request.result ? showInfo(request.result) : showInfo("Error downloading salary.");
     }
 });
+
+const getCachedJobs = (callback) => {
+    return chrome.storage.local.get(constants.cacheKey, result => {
+        let cache = result[constants.cacheKey] || [];
+        console.log('cached jobs');
+        console.table(cache);
+        // const existingJobIndex = cache.findIndex(x => x.id === jobId);
+
+        callback(cache);
+    });
+}
+
+const updateSearchPage = (jobs) => {
+    console.log('Updating search page');
+    const elements = document.querySelectorAll("article[data-job-id]");
+    console.table(elements);
+    for (const element of elements) {
+        const job = JSON.parse(element.getAttribute("data-job-id"));
+        console.log(`Job: ${job}`);
+        const existingJobIndex = jobs.findIndex(x => x.id == job);
+        console.log(`Existing job index: ${existingJobIndex}`);
+        if (existingJobIndex !== -1) {
+            // const cachedJob = jobs[existingJobIndex];
+            // addSearchPlaceholder(cachedJob.salary, cachedJob);
+            // TODO: Add data to job
+        }
+    }
+}
+
+const getJobsOnPage = () => {
+    const jobs = [];
+    const elements = document.querySelectorAll("div[data-search-sol-meta]");
+    for (const element of elements) {
+        const job = JSON.parse(element.getAttribute("data-search-sol-meta"));
+        jobs.push(job);
+    }
+
+    return jobs;
+}
+
+
+const findCachedJob = (url, callback) => {
+    try {
+        console.log(`FINDING CACHED JOB`);
+        const jobId = getJobId(url);
+        chrome.storage.local.get(constants.cacheKey, result => {
+            let jobCache = result[constants.cacheKey] || [];
+            const job = jobCache.find(x => x.id === jobId);
+            callback(job);
+        });
+    } catch (exception) {
+        console.error(`Failed to find cached job for url ${url}`, exception);
+        callback(null);
+    }
+};
 
 const showInfo = async (value, notes = '') => {
     await new Promise(resolve => setTimeout(resolve, 1000));
