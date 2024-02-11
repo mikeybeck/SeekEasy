@@ -23,15 +23,6 @@ const addPlaceholder = (text, job) => {
             }
 
             if (job) {
-                // const notesSpan = document.createElement("span");
-                // notesSpan.id = selectors.salaryRange + "-notes";
-                // notesSpan.innerText = `Notes: ${job.notes}`;
-                // notesSpan.style.fontSize = "16px";
-                // notesSpan.style.lineHeight = "24px";
-                // notesSpan.style.fontFamily = "SeekSans, \"SeekSans Fallback\", Arial, sans-serif";
-                //
-                // div.append(notesSpan);
-
                 const notesTextArea = document.createElement("textarea");
                 notesTextArea.id = selectors.salaryRange + "-notes-textarea";
                 notesTextArea.style.width = "100%";
@@ -39,7 +30,6 @@ const addPlaceholder = (text, job) => {
                 notesTextArea.style.marginTop = "10px";
                 notesTextArea.value = job.notes;
 
-                // Insert button: <button type="button" className="btn btn-primary save-button" id="saveButton">Save</button>
                 const saveButton = document.createElement("button");
                 saveButton.type = "button";
                 saveButton.className = "btn btn-primary save-button";
@@ -134,6 +124,4 @@ function updateNotes(job) {
         message: "update-notes2",
         result: job,
     });
-    // sendMessage('update-notes2', cachedJob ? cachedJob.notes : "")
-    // showSalary(null, job.notes);
 }

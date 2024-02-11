@@ -230,8 +230,6 @@ const handleScriptInjection = (tabId, url) => {
                     console.log("Not a job url.  Need to check if it's a search page.");
                     if (isSearchPage(url)) {
                         console.log("It's a search page.");
-                        // Run search page function
-                        // ...
                         updateSearchPage(tabId, url);
                     }
                 }
@@ -240,35 +238,10 @@ const handleScriptInjection = (tabId, url) => {
                     target: {tabId: tabId},
                     files: ['seeker.js', 'search.js']
                 });
-                // chrome.scripting.executeScript({
-                //     target: {tabId: tabId},
-                //     files: ['search.js']
-                // });
             }
         }
     );
 };
-
-// async function updateJobsOnSearchPage(tabId, url) {
-//     // Get all job IDs from the search page.
-//     const jobIds = await getJobIdsFromSearchPage(url);
-//     console.log(`Job IDs: ${jobIds}`);
-//     // Get all job details from the search page.
-//     const jobDetails = await getJobDetails(jobIds);
-//     console.log(`Job details: ${jobDetails}`);
-//     // Update the cache with the job details.
-//     updateCache(jobDetails);
-//     // Update the UI with the job details.
-//     updateUI(tabId, jobDetails);
-// }
-//
-// async function getJobIdsFromSearchPage(url) {
-//     // Get all job IDs from the search page.
-//     const response = await fetch(url);
-//     const text = await response.text();
-//     const jobIds = text.match(/job\/\d+/g);
-//     return jobIds;
-// }
 
 const updateSearchPage = async (tabId, url) => {
     sendMessage(tabId, 'update-search-placeholder', "Calculating...");
@@ -341,6 +314,5 @@ chrome.runtime.onMessage.addListener((request) => {
     if (request.message === "update-notes2") {
         console.log(`NOTES3: ${request.result}`);
         request.result ? cacheJob(request.result.id, request.result.title, request.result.company, request.result.minimum, request.result.maximum, request.result.range, request.result.notes) : console.log("Error updating notes.");
-        // request.result ? showSalary(null, request.result) : showSalary("Error showing notes.");
     }
 });
