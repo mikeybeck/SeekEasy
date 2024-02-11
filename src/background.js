@@ -207,9 +207,9 @@ const sendMessage = (tabId, message, result) => {
 };
 
 const handleScriptInjection = (tabId, url) => {
-    // if (!isSupportedUrl(url)) {
-    //     return;
-    // }
+    if (!isSeekUrl(url)) {
+        return;
+    }
 
     chrome.scripting.executeScript(
         {
@@ -321,6 +321,8 @@ const findCachedJob = (url, callback) => {
 const isJobUrl = url => url.toLowerCase().includes("/job/");
 
 const isExpiredJobUrl = url => url.toLowerCase().includes("/expiredjob/");
+
+const isSeekUrl = url => url.toLowerCase().includes("seek.co");
 
 function isSearchPage(url) {
     return url.toLowerCase().includes("jobs"); // Not great but seems to be the best we can do from the URL.
