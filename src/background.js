@@ -283,23 +283,33 @@ const checkJobType = async (tabId, url) => {
                 const isCurrent = cachedJob && cachedJob.version === constants.version; // Use cache for jobs created on same version.
                 const createdToday = cachedJob && getDifferenceInDays(new Date().getTime(), cachedJob.created) === 0; // Use cache for jobs viewed on the same day.
 
+                if (!cachedJob) {
+                    console.log("No cached job found.");
+                    cachedJob = {};
+                }
+
                 if (isCurrent && createdToday) {
                     console.table(cachedJob);
                     console.log(`Cached salary range is ${cachedJob.range}`);
-                    sendMessage(tabId, 'update-placeholder', cachedJob.range);
+                    sendMessage(tabId, 'update-placeholder', cachedJob);
                 } else {
                     const range = await calculateRange(url);
+                    cachedJob.range = range;
                     console.log(`Salary range is ${range}`);
-                    sendMessage(tabId, 'update-placeholder', range);
+                    sendMessage(tabId, 'update-placeholder', cachedJob);
                 }
 
                 // Update notes on job
-                sendMessage(tabId, 'update-notes', cachedJob ? cachedJob : {});
+                // sendMessage(tabId, 'update-notes', cachedJob ? cachedJob : {});
             } catch (exception) {
-                sendMessage(tabId, 'update-placeholder', cachedJob ? cachedJob.range : `Failed to calculate salary range: ${exception.message}`);
+                // sendMessage(tabId, 'update-placeholder', cachedJob ? cachedJob.range : `Failed to calculate salary range: ${exception.message}`);
+                sendMessage(tabId, 'update-placeholder', cachedJob);
+                console.error(`Failed to calculate salary range for job ${url}`, exception);
             }
         } else if (isExpiredJobUrl(url)) {
-            sendMessage(tabId, 'update-placeholder', cachedJob ? cachedJob.range : "Couldn't find a cached salary for this job");
+            // sendMessage(tabId, 'update-placeholder', cachedJob ? cachedJob.range : "Couldn't find a cached salary for this job");
+            sendMessage(tabId, 'update-placeholder', cachedJob);
+            console.error('Could not find a cached salary for this job.');
         }
     });
 };

@@ -3,7 +3,7 @@ const selectors = {
     legacySalaryRange: "legacy-salary-range-value",
 };
 
-const addPlaceholder = (text, job) => {
+const addPlaceholder = (job, message) => {
     const elements = document.querySelectorAll("span");
     for (const element of elements) {
         if (element.innerText.includes('Posted')) {
@@ -12,17 +12,15 @@ const addPlaceholder = (text, job) => {
 
             const span = document.createElement("span");
 
-            if (text !== null) {
+            if (job) {
                 span.id = selectors.salaryRange;
-                span.innerText = `Salary (estimated): ${text}`;
+                span.innerText = `Salary (estimated): ${job.range}`;
                 span.style.fontSize = "16px";
                 span.style.lineHeight = "24px";
                 span.style.fontFamily = "SeekSans, \"SeekSans Fallback\", Arial, sans-serif";
 
                 div.append(span);
-            }
 
-            if (job) {
                 const notesTextArea = document.createElement("textarea");
                 notesTextArea.id = selectors.salaryRange + "-notes-textarea";
                 notesTextArea.style.width = "100%";
@@ -33,7 +31,7 @@ const addPlaceholder = (text, job) => {
                 const saveButton = document.createElement("button");
                 saveButton.type = "button";
                 saveButton.className = "btn btn-primary save-button";
-                saveButton.id = selectors.salaryRange +  "-notes-save-button";
+                saveButton.id = selectors.salaryRange + "-notes-save-button";
                 saveButton.innerText = "Save";
 
                 saveButton.onclick = () => {
@@ -45,21 +43,32 @@ const addPlaceholder = (text, job) => {
                 div.append(saveButton);
             }
 
+            if (message) {
+                const messageSpan = document.createElement("span");
+                messageSpan.innerText = message;
+                messageSpan.style.color = "red";
+                messageSpan.style.fontSize = "14px";
+                messageSpan.style.lineHeight = "24px";
+                messageSpan.style.fontFamily = "SeekSans, \"SeekSans Fallback\", Arial, sans-serif";
+
+                div.append(messageSpan);
+            }
+
             element.parentElement.before(div);
         }
     }
 };
 
 // Seek seems to be doing a/b testing so try and support both for now
-const showSalary = async (value, notes = '') => {
+const showSalary = async (job, message = '') => {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     try {
-        addPlaceholder(value, notes);
+        addPlaceholder(job, message);
     } catch (exception) {
     }
     try {
-        updateLegacyPlaceholder(value, notes);
+        updateLegacyPlaceholder(job, message);
     } catch (exception) {
     }
 }
@@ -87,7 +96,7 @@ const addLegacyPlaceholder = () => {
     }
 };
 
-const updateLegacyPlaceholder = (text, notes) => {
+const updateLegacyPlaceholder = (job, message) => {
     // Wait for a max of 2 seconds for career insights to load before adding the placeholder.
     let elapsed = 0;
     const interval = setInterval(() => {
@@ -98,7 +107,7 @@ const updateLegacyPlaceholder = (text, notes) => {
 
             const elements = document.querySelectorAll(`#${selectors.legacySalaryRange}`);
             for (const element of elements) {
-                element.innerText = text;
+                element.innerText = job.range;
             }
         }
 
@@ -108,13 +117,13 @@ const updateLegacyPlaceholder = (text, notes) => {
 
 chrome.runtime.onMessage.addListener((request) => {
     if (request.message === "update-placeholder") {
-        console.log(`Salary range: ${request.result}`);
-        request.result ? showSalary(request.result) : showSalary("Error downloading salary.");
+        console.log(`Salary range: ${request.result.range}`);
+        request.result.range ? showSalary(request.result) : showSalary(null, "Error downloading salary.");
     }
 
     if (request.message === "update-notes") {
         console.log(`NOTES: ${request.result}`);
-        request.result ? showSalary(null, request.result) : showSalary("Error showing notes.");
+        request.result ? showSalary(request.result) : showSalary(null, "Error showing notes.");
     }
 });
 
