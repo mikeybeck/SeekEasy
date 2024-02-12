@@ -100,12 +100,7 @@ const displayFilter = async (loops = 0) => {
         const clearFilterButton = document.createElement("button");
         clearFilterButton.innerHTML = "Clear filter";
         clearFilterButton.onclick = () => {
-            tagFilter.selectedIndex = -1;
-            const jobElements = document.querySelectorAll("article[data-job-id]");
-            for (const element of jobElements) {
-                element.style.backgroundColor = "black";
-                element.style.display = "block";
-            }
+            clearFilter();
         }
 
         const filterShowToggle = document.createElement("input");
@@ -143,6 +138,15 @@ const displayFilter = async (loops = 0) => {
     });
 }
 
+const clearFilter = () => {
+    document.getElementById('multipleSelect').selectedIndex = -1;
+    const jobElements = document.querySelectorAll("article[data-job-id]");
+    for (const element of jobElements) {
+        element.style.backgroundColor = "black";
+        element.style.display = "block";
+    }
+}
+
 const applyFilter = () => {
     var options = document.getElementById('multipleSelect').options,
         tags = [];
@@ -176,13 +180,14 @@ const applyFilter = () => {
             console.log(jobIds);
             console.log(job);
             const filterShowToggle = document.getElementById('filterShowToggle').checked;
-            const showJob = filterShowToggle === false && jobIds.includes(job.toString());
+            const showJob = filterShowToggle === false && jobIds.includes(job.toString()) ||
+                filterShowToggle === true && !jobIds.includes(job.toString());
             const hideUntaggedJobsToggle = document.getElementById('hideUntaggedJobsToggle').checked;
             const jobTags = JSON.parse(cachedJobs.find(x => x.id == job)?.tags || '[]');
             const showUntaggedJob = hideUntaggedJobsToggle === false && jobTags.length === 0;
             if (showJob || showUntaggedJob) {
                 // element.style.backgroundColor = "black";
-                element.style.display = "block";
+                // element.style.display = "block";
             } else {
                 // element.style.display = "none";
                 element.style.backgroundColor = "lightgrey";
