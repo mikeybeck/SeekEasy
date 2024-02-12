@@ -90,8 +90,47 @@ const displayFilter = () => {
         filterButton.style.border = "none";
         filterButton.style.cursor = "pointer";
 
+        // Clear filters button
+        const clearFilterButton = document.createElement("button");
+        clearFilterButton.innerHTML = "Clear filter";
+        clearFilterButton.onclick = () => {
+            tagFilter.selectedIndex = -1;
+            const jobElements = document.querySelectorAll("article[data-job-id]");
+            for (const element of jobElements) {
+                element.style.backgroundColor = "black";
+            }
+        }
+
+        const filterShowToggle = document.createElement("input");
+        filterShowToggle.type = "checkbox";
+        filterShowToggle.id = "filterShowToggle";
+        filterShowToggle.value = "show";
+
+        const filterShowToggleLabel = document.createElement("label");
+        filterShowToggleLabel.htmlFor = "filterShowToggle";
+        filterShowToggleLabel.innerText = "Hide filtered jobs";
+        filterShowToggleLabel.style.marginLeft = "5px";
+        filterShowToggleLabel.style.fontSize = "10px";
+
+        // Add checkbox to hide untagged jobs
+        const hideUntaggedJobsToggle = document.createElement("input");
+        hideUntaggedJobsToggle.type = "checkbox";
+        hideUntaggedJobsToggle.id = "hideUntaggedJobsToggle";
+        hideUntaggedJobsToggle.value = "show";
+
+        const hideUntaggedJobsToggleLabel = document.createElement("label");
+        hideUntaggedJobsToggleLabel.htmlFor = "hideUntaggedJobsToggle";
+        hideUntaggedJobsToggleLabel.innerText = "Hide untagged jobs";
+        hideUntaggedJobsToggleLabel.style.marginLeft = "5px";
+        hideUntaggedJobsToggleLabel.style.fontSize = "10px";
+
         filters.appendChild(tagFilter);
         filters.appendChild(filterButton);
+        filters.appendChild(clearFilterButton);
+        filters.appendChild(filterShowToggle);
+        filters.appendChild(filterShowToggleLabel);
+        filters.appendChild(hideUntaggedJobsToggle);
+        filters.appendChild(hideUntaggedJobsToggleLabel);
 
         numJobsElement[0].appendChild(filters);
     });
@@ -125,14 +164,20 @@ const applyFilter = () => {
         // Hide all jobs that don't match the filter (currently using background colour to indicate for test purposes)
         const jobElements = document.querySelectorAll("article[data-job-id]");
         for (const element of jobElements) {
+            element.style.backgroundColor = "black";
             const job = JSON.parse(element.getAttribute("data-job-id"));
             console.log(jobIds);
             console.log(job);
-            if (!jobIds.includes(job.toString())) {
-                // element.style.display = "none";
-                element.style.backgroundColor = "lightgray";
+            const filterShowToggle = document.getElementById('filterShowToggle').checked;
+            const showJob = filterShowToggle === false && jobIds.includes(job.toString());
+            const hideUntaggedJobsToggle = document.getElementById('hideUntaggedJobsToggle').checked;
+            const jobTags = JSON.parse(cachedJobs.find(x => x.id == job)?.tags || '[]');
+            const showUntaggedJob = hideUntaggedJobsToggle === false && jobTags.length === 0;
+            if (showJob || showUntaggedJob) {
+                // element.style.backgroundColor = "black";
             } else {
-                element.style.backgroundColor = "black";
+                // element.style.display = "none";
+                element.style.backgroundColor = "lightgrey";
             }
         }
     });
