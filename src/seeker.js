@@ -120,7 +120,9 @@ const addPlaceholder = (job, message) => {
             tagsInput.style.marginTop = "10px";
             tagsInput.placeholder = "Add tags here...";
             tagsInput.type = "text";
-            tagsInput.value = job.tags || "";
+            tagsInput.value = "";
+
+            displayTags(job, tagsList);
 
             // Add an event listener for keydown on the input element
             tagsInput.addEventListener('keydown', function (event) {
@@ -139,11 +141,13 @@ const addPlaceholder = (job, message) => {
                         // Set the text content of the tag to the trimmed value
                         tag.innerText = tagContent;
                         // Add a delete button to the tag
-                        tag.innerHTML += '<button class="delete-button">X</button>';
+                        tag.outerHTML += '<button class="delete-button">X</button>';
                         // Append the tag to the tags list
                         tagsList.appendChild(tag);
                         // Clear the input element's value
                         tagsInput.value = '';
+
+                        addTagToJob(job, tagContent);
                     }
                 }
             });
@@ -152,6 +156,10 @@ const addPlaceholder = (job, message) => {
             tagsList.addEventListener('click', function (event) {
                 // If the clicked element has the class 'delete-button'
                 if (event.target.classList.contains('delete-button')) {
+                    // Use node index of the tag to determine which tag to remove. This seems to be the most reliable
+                    // way to do this.  Tags *should* always be in the same order (I think).
+                    const index = Array.prototype.indexOf.call(tagsList.children, event.target.parentNode);
+                    removeTagFromJob(job, index);
                     // Remove the parent element (the tag)
                     event.target.parentNode.remove();
                 }
@@ -165,6 +173,41 @@ const addPlaceholder = (job, message) => {
         }
     }
 };
+
+const displayTags = (job, tagsList) => {
+    const tags = JSON.parse(job.tags);
+    tagsList.innerHTML = "";
+    tags.forEach(tag => {
+        const tagElement = document.createElement("li");
+        tagElement.innerText = tag;
+        tagElement.innerHTML += '<button class="delete-button">X</button>';
+        tagsList.appendChild(tagElement);
+    });
+}
+
+const addTagToJob = (job, tag) => {
+    if (job.tags) {
+        let tags = JSON.parse(job.tags);
+        tags.push(tag);
+        job.tags = JSON.stringify(tags);
+    } else {
+        job.tags = JSON.stringify([tag]);
+    }
+    updateJobInfo(job);
+}
+
+const removeTagFromJob = (job, tagIndex) => {
+    let tags = JSON.parse(job.tags);
+    tags.splice(tagIndex, 1);
+    job.tags = JSON.stringify(tags);
+    updateJobInfo(job);
+}
+
+// const saveTags = (job, tags) => {
+//     const tags = document.getElementById(selectors.salaryRange + "-tags-input").value;
+//     job.tags = tags;
+//     updateJobInfo(job);
+// }
 
 // Seek seems to be doing a/b testing so try and support both for now
 const showSalary = async (job, message = '') => {
