@@ -349,9 +349,9 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 });
 
 chrome.runtime.onMessage.addListener((request) => {
-    if (request.message === "update-job-data") {
+    if (request.message === "update-job-info") {
         console.log(`NOTES3: ${request.result}`);
-        request.result ? updateJob(request.result) : console.log("Error updating job data.");
+        request.result ? updateJob(request.result) : console.log("Error updating job info.");
         // request.result ? cacheJob(request.result.id, request.result.title, request.result.company, request.result.minimum, request.result.maximum, request.result.range, request.result.notes) : console.log("Error updating notes.");
     }
 });
