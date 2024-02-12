@@ -57,8 +57,12 @@ const addSearchPlaceholder = (element, job) => {
 
     const span = document.createElement("span");
 
+    const jobTags = JSON.parse(job.tags || '{}');
+    const tags = jobTags.join(", ");
+    const textToInsert = `Salary (estimated): ${job.range}\nNotes: ${job.notes}\nTags: ${tags}`;
+
     span.id = selectors.salaryRange;
-    span.innerText = `Salary (estimated): ${job.range}\n${job.notes}`;
+    span.innerText = textToInsert;
     span.style.fontSize = "16px";
     span.style.lineHeight = "24px";
     span.style.fontFamily = "SeekSans, \"SeekSans Fallback\", Arial, sans-serif";
