@@ -57,7 +57,7 @@ const addSearchPlaceholder = (element, job) => {
 
     const span = document.createElement("span");
 
-    const jobTags = JSON.parse(job.tags || '{}');
+    const jobTags = JSON.parse(job.tags || '[]');
     const tags = jobTags.join(", ");
     const textToInsert = `Salary (estimated): ${job.range}\nNotes: ${job.notes}\nTags: ${tags}`;
 
