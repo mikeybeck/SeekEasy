@@ -99,18 +99,43 @@ const displayFilter = () => {
 
 const applyFilter = () => {
     var options = document.getElementById('multipleSelect').options,
-        result = [];
+        tags = [];
 
     for (var i = 0, len = options.length; i < len; i++) {
         var opt = options[i];
 
         if (opt.selected) {
-            result.push(opt.value);
+            tags.push(opt.value);
         }
     }
 
-    console.log(result);
-    alert(result);
+    // Find all job IDs with the selected tags
+    const jobIds = [];
+    getCachedJobs(async (cachedJobs) => {
+        for (const job of cachedJobs) {
+            const jobTags = JSON.parse(job.tags || '[]');
+            for (const tag of tags) {
+                if (jobTags.includes(tag)) {
+                    jobIds.push(job.id);
+                    break;
+                }
+            }
+        }
+
+        // Hide all jobs that don't match the filter (currently using background colour to indicate for test purposes)
+        const jobElements = document.querySelectorAll("article[data-job-id]");
+        for (const element of jobElements) {
+            const job = JSON.parse(element.getAttribute("data-job-id"));
+            console.log(jobIds);
+            console.log(job);
+            if (!jobIds.includes(job.toString())) {
+                // element.style.display = "none";
+                element.style.backgroundColor = "lightgray";
+            } else {
+                element.style.backgroundColor = "black";
+            }
+        }
+    });
 }
 
 const showInfo = async (element, cachedJob) => {
