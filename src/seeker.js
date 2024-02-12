@@ -55,6 +55,112 @@ const addPlaceholder = (job, message) => {
                 div.append(messageSpan);
             }
 
+
+            // Add CSS
+            var styles = `
+                .tags-input { 
+                    display: block; 
+                    position: relative; 
+                    border: 1px solid #ccc; 
+                    border-radius: 4px; 
+                    padding: 5px; 
+                    box-shadow: 2px 2px 5px #00000033; 
+                } 
+          
+                .tags-input ul { 
+                    list-style: none; 
+                    padding: 0; 
+                    margin: 0; 
+                } 
+          
+                .tags-input li { 
+                    display: inline-block; 
+                    background-color: #f2f2f2; 
+                    color: #333; 
+                    border-radius: 20px; 
+                    padding: 5px 10px; 
+                    margin-right: 5px; 
+                    margin-bottom: 5px; 
+                } 
+          
+                .tags-input input[type="text"] { 
+                    border: none; 
+                    outline: none; 
+                    padding: 5px; 
+                    font-size: 14px; 
+                } 
+          
+                .tags-input input[type="text"]:focus { 
+                    outline: none; 
+                } 
+          
+                .tags-input .delete-button { 
+                    background-color: transparent; 
+                    border: none; 
+                    color: #999; 
+                    cursor: pointer; 
+                    margin-left: 5px; 
+                } 
+            `;
+
+            var styleSheet = document.createElement("style");
+            styleSheet.innerText = styles;
+            document.head.appendChild(styleSheet);
+
+            const tagsDiv = document.createElement("div");
+            tagsDiv.className = "tags-input";
+            const tagsList = document.createElement("ul");
+            tagsList.id = "tags";
+
+            // Add tags input box
+            const tagsInput = document.createElement("input");
+            tagsInput.id = selectors.salaryRange + "-tags-input";
+            tagsInput.style.width = "100%";
+            tagsInput.style.height = "30px";
+            tagsInput.style.marginTop = "10px";
+            tagsInput.placeholder = "Add tags here...";
+            tagsInput.type = "text";
+            tagsInput.value = job.tags || "";
+
+            // Add an event listener for keydown on the input element
+            tagsInput.addEventListener('keydown', function (event) {
+                // Check if the key pressed is 'Enter'
+                if (event.key === 'Enter') {
+                    console.log(tagsInput.value);
+                    // Prevent the default action of the keypress
+                    // event (submitting the form)
+                    event.preventDefault();
+                    // Create a new list item element for the tag
+                    const tag = document.createElement('li');
+                    // Get the trimmed value of the input element
+                    const tagContent = tagsInput.value.trim();
+                    // If the trimmed value is not an empty string
+                    if (tagContent !== '') {
+                        // Set the text content of the tag to the trimmed value
+                        tag.innerText = tagContent;
+                        // Add a delete button to the tag
+                        tag.innerHTML += '<button class="delete-button">X</button>';
+                        // Append the tag to the tags list
+                        tagsList.appendChild(tag);
+                        // Clear the input element's value
+                        tagsInput.value = '';
+                    }
+                }
+            });
+
+            // Add an event listener for click on the tags list
+            tagsList.addEventListener('click', function (event) {
+                // If the clicked element has the class 'delete-button'
+                if (event.target.classList.contains('delete-button')) {
+                    // Remove the parent element (the tag)
+                    event.target.parentNode.remove();
+                }
+            });
+
+            tagsDiv.appendChild(tagsList);
+            tagsDiv.appendChild(tagsInput);
+            div.appendChild(tagsDiv);
+
             element.parentElement.before(div);
         }
     }
