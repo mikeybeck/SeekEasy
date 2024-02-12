@@ -36,7 +36,7 @@ const addPlaceholder = (job, message) => {
 
                 saveButton.onclick = () => {
                     job.notes = document.getElementById(selectors.salaryRange + "-notes-textarea").value;
-                    updateNotes(job);
+                    updateJob(job);
                 }
 
                 div.append(notesTextArea);
@@ -127,10 +127,10 @@ chrome.runtime.onMessage.addListener((request) => {
     }
 });
 
-function updateNotes(job) {
+function updateJob(job) {
     console.log(`NOTES2: ${job}`);
     chrome.runtime.sendMessage({
-        message: "update-notes-data",
+        message: "update-job-data",
         result: job,
     });
 }
