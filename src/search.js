@@ -73,15 +73,26 @@ const displayFilter = async (loops = 0) => {
         filters.style.alignItems = "center";
         filters.style.justifyContent = "flex-start";
 
-        const tagFilter = document.createElement("select");
-        tagFilter.id = "multipleSelect";
-        tagFilter.multiple = true;
+        const tagFilterShow = document.createElement("select");
+        tagFilterShow.id = "tagFilterShow";
+        tagFilterShow.multiple = true;
         // Add tags to filter
         for (const tag of uniqueTags) {
             const option = document.createElement("option");
             option.value = tag;
             option.text = tag;
-            tagFilter.appendChild(option);
+            tagFilterShow.appendChild(option);
+        }
+
+        const tagFilterHide = document.createElement("select");
+        tagFilterHide.id = "tagFilterHide";
+        tagFilterHide.multiple = true;
+        // Add tags to filter
+        for (const tag of uniqueTags) {
+            const option = document.createElement("option");
+            option.value = tag;
+            option.text = tag;
+            tagFilterHide.appendChild(option);
         }
 
         // Add filter button
@@ -100,7 +111,7 @@ const displayFilter = async (loops = 0) => {
         const clearFilterButton = document.createElement("button");
         clearFilterButton.innerHTML = "Clear filter";
         clearFilterButton.onclick = () => {
-            clearFilter();
+            clearFilter(true);
         }
 
         const filterShowToggle = document.createElement("input");
@@ -126,11 +137,12 @@ const displayFilter = async (loops = 0) => {
         hideUntaggedJobsToggleLabel.style.marginLeft = "5px";
         hideUntaggedJobsToggleLabel.style.fontSize = "10px";
 
-        filters.appendChild(tagFilter);
+        filters.appendChild(tagFilterShow);
+        filters.appendChild(tagFilterHide);
         filters.appendChild(filterButton);
         filters.appendChild(clearFilterButton);
-        filters.appendChild(filterShowToggle);
-        filters.appendChild(filterShowToggleLabel);
+        // filters.appendChild(filterShowToggle);
+        // filters.appendChild(filterShowToggleLabel);
         filters.appendChild(hideUntaggedJobsToggle);
         filters.appendChild(hideUntaggedJobsToggleLabel);
 
@@ -138,8 +150,12 @@ const displayFilter = async (loops = 0) => {
     });
 }
 
-const clearFilter = () => {
-    document.getElementById('multipleSelect').selectedIndex = -1;
+const clearFilter = (clearSelected = false) => {
+    if (clearSelected) {
+        document.getElementById('tagFilterShow').selectedIndex = -1;
+        document.getElementById('tagFilterHide').selectedIndex = -1;
+    }
+
     const jobElements = document.querySelectorAll("article[data-job-id]");
     for (const element of jobElements) {
         element.style.backgroundColor = "black";
@@ -148,14 +164,25 @@ const clearFilter = () => {
 }
 
 const applyFilter = () => {
-    var options = document.getElementById('multipleSelect').options,
+    clearFilter();
+    var optionsShow = document.getElementById('tagFilterShow').options,
+        optionsHide = document.getElementById('tagFilterHide').options,
         tags = [];
 
-    for (var i = 0, len = options.length; i < len; i++) {
-        var opt = options[i];
+    for (var i = 0, len = optionsShow.length; i < len; i++) {
+        var opt = optionsShow[i];
 
         if (opt.selected) {
             tags.push(opt.value);
+        }
+    }
+
+    // Remove tags to hide
+    for (var i = 0, len = optionsHide.length; i < len; i++) {
+        var opt = optionsHide[i];
+
+        if (opt.selected) {
+            tags = tags.filter(x => x !== opt.value);
         }
     }
 
@@ -179,9 +206,10 @@ const applyFilter = () => {
             const job = JSON.parse(element.getAttribute("data-job-id"));
             console.log(jobIds);
             console.log(job);
-            const filterShowToggle = document.getElementById('filterShowToggle').checked;
-            const showJob = filterShowToggle === false && jobIds.includes(job.toString()) ||
-                filterShowToggle === true && !jobIds.includes(job.toString());
+            // const filterShowToggle = document.getElementById('filterShowToggle').checked;
+            // const showJob = filterShowToggle === false && jobIds.includes(job.toString()) ||
+            //     filterShowToggle === true && !jobIds.includes(job.toString());
+            const showJob = jobIds.includes(job.toString());
             const hideUntaggedJobsToggle = document.getElementById('hideUntaggedJobsToggle').checked;
             const jobTags = JSON.parse(cachedJobs.find(x => x.id == job)?.tags || '[]');
             const showUntaggedJob = hideUntaggedJobsToggle === false && jobTags.length === 0;
