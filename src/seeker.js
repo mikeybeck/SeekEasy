@@ -170,6 +170,8 @@ const addPlaceholder = (job, message) => {
             div.appendChild(tagsDiv);
 
             element.parentElement.before(div);
+        } else {
+            console.log('No `posted` element found');
         }
     }
 };
@@ -214,10 +216,12 @@ const showSalary = async (job, message = '') => {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     try {
+        console.log('Adding placeholder');
         addPlaceholder(job, message);
     } catch (exception) {
     }
     try {
+        console.log('Updating legacy placeholder');
         updateLegacyPlaceholder(job, message);
     } catch (exception) {
     }
