@@ -130,7 +130,7 @@ chrome.runtime.onMessage.addListener((request) => {
 function updateNotes(job) {
     console.log(`NOTES2: ${job}`);
     chrome.runtime.sendMessage({
-        message: "update-notes2",
+        message: "update-notes-data",
         result: job,
     });
 }

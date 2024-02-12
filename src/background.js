@@ -349,7 +349,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 });
 
 chrome.runtime.onMessage.addListener((request) => {
-    if (request.message === "update-notes2") {
+    if (request.message === "update-notes-data") {
         console.log(`NOTES3: ${request.result}`);
         request.result ? updateJob(request.result) : console.log("Error updating notes.");
         // request.result ? cacheJob(request.result.id, request.result.title, request.result.company, request.result.minimum, request.result.maximum, request.result.range, request.result.notes) : console.log("Error updating notes.");
