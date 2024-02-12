@@ -1,7 +1,7 @@
 const constants = {
     maxResults: 50,
     maxRequests: 10,
-    maxCacheDays: 45,
+    maxCacheDays: 60,
     cacheKey: "jobs",
     searchUrl: "https://www.seek.com.au/api/chalice-search/v4/search",
     seekNewZealand: "seek.co.nz",
@@ -39,7 +39,7 @@ const calculateRange = async (url) => {
 
         if (minSalary && maxSalary) {
             const range = `$${minSalary.toLocaleString()} - $${maxSalary.toLocaleString()}`;
-            cacheJob(jobId, job.title, job.companyName, minSalary, maxSalary, range, notes);
+            cacheJob(jobId, job.title, job.companyName, minSalary, maxSalary, range);
             return range;
         }
     } else {
@@ -161,7 +161,7 @@ const getJob = async (jobId, min, max) => {
     }
 };
 
-const cacheJob = (jobId, title, company, minimum, maximum, range, notes) => {
+const cacheJob = (jobId, title, company, minimum, maximum, range) => {
     try {
         const currentDate = new Date().getTime();
         const job = {
@@ -171,7 +171,6 @@ const cacheJob = (jobId, title, company, minimum, maximum, range, notes) => {
             minimum: minimum,
             maximum: maximum,
             range: range,
-            notes: notes,
             created: currentDate,
             version: constants.version
         };
@@ -180,6 +179,8 @@ const cacheJob = (jobId, title, company, minimum, maximum, range, notes) => {
             let cache = result[constants.cacheKey] || [];
             const existingJobIndex = cache.findIndex(x => x.id === jobId);
             if (existingJobIndex !== -1) {
+                // Get notes from existing job
+                job.notes = cache[existingJobIndex].notes;
                 cache[existingJobIndex] = job;
             } else {
                 cache.push(job);
@@ -194,6 +195,33 @@ const cacheJob = (jobId, title, company, minimum, maximum, range, notes) => {
         });
     } catch (exception) {
         console.log(`Failed to cache job ${jobId}`, exception);
+    }
+};
+
+const updateJob = (job) => {
+    try {
+        const currentDate = new Date().getTime();
+        job.updated = currentDate;
+        job.version = constants.version;
+
+        chrome.storage.local.get(constants.cacheKey, result => {
+            let cache = result[constants.cacheKey] || [];
+            const existingJobIndex = cache.findIndex(x => x.id === job.id);
+            if (existingJobIndex !== -1) {
+                cache[existingJobIndex] = job;
+            } else {
+                cache.push(job);
+            }
+
+            // Remove old jobs from cache
+            const updatedCache = cache.filter(x => getDifferenceInDays(currentDate, x.updated) <= constants.maxCacheDays);
+
+            let storeObj = {};
+            storeObj[constants.cacheKey] = updatedCache;
+            chrome.storage.local.set(storeObj);
+        });
+    } catch (exception) {
+        console.log(`Failed to update job ${job.id}`, exception);
     }
 };
 
@@ -313,6 +341,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 chrome.runtime.onMessage.addListener((request) => {
     if (request.message === "update-notes2") {
         console.log(`NOTES3: ${request.result}`);
-        request.result ? cacheJob(request.result.id, request.result.title, request.result.company, request.result.minimum, request.result.maximum, request.result.range, request.result.notes) : console.log("Error updating notes.");
+        request.result ? updateJob(request.result) : console.log("Error updating notes.");
+        // request.result ? cacheJob(request.result.id, request.result.title, request.result.company, request.result.minimum, request.result.maximum, request.result.range, request.result.notes) : console.log("Error updating notes.");
     }
 });
