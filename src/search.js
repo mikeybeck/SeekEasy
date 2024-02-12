@@ -98,6 +98,7 @@ const displayFilter = () => {
             const jobElements = document.querySelectorAll("article[data-job-id]");
             for (const element of jobElements) {
                 element.style.backgroundColor = "black";
+                element.style.display = "block";
             }
         }
 
@@ -175,9 +176,11 @@ const applyFilter = () => {
             const showUntaggedJob = hideUntaggedJobsToggle === false && jobTags.length === 0;
             if (showJob || showUntaggedJob) {
                 // element.style.backgroundColor = "black";
+                element.style.display = "block";
             } else {
                 // element.style.display = "none";
                 element.style.backgroundColor = "lightgrey";
+                element.style.display = "none";
             }
         }
     });
