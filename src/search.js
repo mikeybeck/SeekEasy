@@ -8,6 +8,7 @@ chrome.runtime.onMessage.addListener((request) => {
         getCachedJobs(async (cachedJobs) => {
             updateSearchPage(cachedJobs);
             displayFilter();
+            await restoreSelectedOptions();
         });
     }
 });
@@ -163,17 +164,65 @@ const clearFilter = (clearSelected = false) => {
     }
 }
 
+const storeSelectedOptions = (optionsShowSelectedIndexes, optionsHideSelectedIndexes) => {
+    console.log('Storing selected options');
+    chrome.storage.local.set({ 'selectedOptionsShow': optionsShowSelectedIndexes, 'selectedOptionsHide': optionsHideSelectedIndexes });
+    console.log('Stored selected options');
+}
+
+const restoreSelectedOptions = async () => {
+    console.log('Restoring selected options');
+
+    chrome.storage.local.get(['selectedOptionsShow', 'selectedOptionsHide'], async function (result) {
+        await waitForElementToExist('#tagFilterShow', function (element) {
+            console.log('Element:', element);
+            for (var i = 0; i < element.options.length; i++) {
+                element.options[i].selected = result.selectedOptionsShow.includes(i);
+            }
+        });
+
+        await waitForElementToExist('#tagFilterHide', function (element) {
+            console.log('Element:', element);
+            for (var i = 0; i < element.options.length; i++) {
+                element.options[i].selected = result.selectedOptionsHide.includes(i);
+            }
+        });
+    });
+    console.log('Restored selected options');
+}
+
+async function waitForElementToExist(selector, callback) {
+    if (document.querySelector(selector)) {
+        console.log('The element exists');
+        return callback(document.querySelector(selector));
+    }
+
+    const intervalID = setInterval(() => {
+        if (document.querySelector(selector)) {
+            console.log('The element exists');
+
+            clearInterval(intervalID);
+
+            callback(document.querySelector(selector));
+        }
+    }, 500);
+}
+
 const applyFilter = () => {
     clearFilter();
+
     var optionsShow = document.getElementById('tagFilterShow').options,
         optionsHide = document.getElementById('tagFilterHide').options,
-        tags = [];
+        tags = [],
+        optionsShowSelectedIndexes = [],
+        optionsHideSelectedIndexes = [];
 
     for (var i = 0, len = optionsShow.length; i < len; i++) {
         var opt = optionsShow[i];
 
         if (opt.selected) {
             tags.push(opt.value);
+            optionsShowSelectedIndexes.push(i);
         }
     }
 
@@ -183,8 +232,11 @@ const applyFilter = () => {
 
         if (opt.selected) {
             tags = tags.filter(x => x !== opt.value);
+            optionsHideSelectedIndexes.push(i);
         }
     }
+
+    storeSelectedOptions(optionsShowSelectedIndexes, optionsHideSelectedIndexes);
 
     // Find all job IDs with the selected tags
     const jobIds = [];
