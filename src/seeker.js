@@ -26,7 +26,8 @@ const addPlaceholder = (job, message) => {
                 notesTextArea.style.width = "100%";
                 notesTextArea.style.height = "100px";
                 notesTextArea.style.marginTop = "10px";
-                notesTextArea.value = job.notes;
+                notesTextArea.placeholder = "Add notes here...";
+                notesTextArea.value = job.notes || "";
 
                 const saveButton = document.createElement("button");
                 saveButton.type = "button";
