@@ -39,11 +39,17 @@ const updateSearchPage = (cachedJobs) => {
     }
 }
 
-const displayFilter = () => {
+const displayFilter = async (loops = 0) => {
     const numJobsElement = document.querySelectorAll("h1[data-automation=totalJobsMessage]");
     if (numJobsElement.length === 0) {
-        console.log("No total jobs text found.  Unable to add filters.");
-        return;
+        if (loops > 10) {
+            console.log("Unable to find total jobs text after 10 seconds.  Exiting.");
+            return;
+        }
+
+        console.log("No total jobs text found yet.  Unable to add filters. Will try again in 1 second.");
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        displayFilter(loops + 1);
     }
 
     // Get all tags from cached jobs
