@@ -336,7 +336,9 @@ const isExpiredJobUrl = url => url.toLowerCase().includes("/expiredjob/");
 const isSeekUrl = url => url.toLowerCase().includes("seek.co");
 
 function isSearchPage(url) {
-    return url.toLowerCase().includes("jobs"); // Not great but seems to be the best we can do from the URL.
+    const lcURL = url.toLowerCase();
+    return lcURL.includes("jobs") && // Not great but seems to be the best we can do from the URL.
+        !lcURL.includes("/my-activity/saved-jobs/");
 }
 
 // const isSupportedUrl = url => isJobUrl(url) || isExpiredJobUrl(url);
