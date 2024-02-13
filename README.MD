@@ -6,7 +6,7 @@ Calculate the salary range for jobs advertised on [Seek](https://seek.com.au).
 
 ## TODO:
 - [x] Display data on job search/list page
-- [ ] Add ability to create tags & filter by them
+- [x] Add ability to create tags & filter by them (Implemented, but a bit broken.  Needs work)
 - [ ] Add ability to filter by job 'viewed' status
 
 ### Privacy
