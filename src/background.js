@@ -343,6 +343,15 @@ function isSearchPage(url) {
 
 // const isSupportedUrl = url => isJobUrl(url) || isExpiredJobUrl(url);
 
+function logError(message, exception) {
+    //console.error(message, exception);
+    console.log(message, exception);
+   chrome.runtime.sendMessage({
+        message: "log-error",
+        result: message + " " + exception.message
+    });
+}
+
 // Handle job access by site navigation, new tab, and page refresh.
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.status === "complete" && tab.url) {
@@ -353,7 +362,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 chrome.runtime.onMessage.addListener((request) => {
     if (request.message === "update-job-info") {
         console.log(`NOTES3: ${request.result}`);
-        request.result ? updateJob(request.result) : console.log("Error updating job info.");
+        request.result ? updateJob(request.result) : logError("Error updating job.", new Error("No job result to update."));
         // request.result ? cacheJob(request.result.id, request.result.title, request.result.company, request.result.minimum, request.result.maximum, request.result.range, request.result.notes) : console.log("Error updating notes.");
     }
 });

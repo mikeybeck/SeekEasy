@@ -13,10 +13,11 @@ const addPlaceholder = (job, message) => {
             console.log('More jobs link found');
             const div = document.createElement("div");
             div.style.marginTop = "10px";
+            div.style.marginBottom = "30px";
 
             const span = document.createElement("span");
 
-            if (job) {
+            if (job.range) {
                 span.id = selectors.salaryRange;
                 span.innerText = `Salary (estimated): ${job.range}`;
                 span.style.fontSize = "16px";
@@ -25,31 +26,38 @@ const addPlaceholder = (job, message) => {
 
                 div.append(span);
                 console.log('Salary range added');
-
-                const notesTextArea = document.createElement("textarea");
-                notesTextArea.id = selectors.salaryRange + "-notes-textarea";
-                notesTextArea.style.width = "100%";
-                notesTextArea.style.height = "100px";
-                notesTextArea.style.marginTop = "10px";
-                notesTextArea.placeholder = "Add notes here...";
-                notesTextArea.value = job.notes || "";
-
-                const saveButton = document.createElement("button");
-                saveButton.type = "button";
-                saveButton.className = "btn btn-primary save-button";
-                saveButton.id = selectors.salaryRange + "-notes-save-button";
-                saveButton.innerText = "Save";
-
-                saveButton.onclick = () => {
-                    job.notes = document.getElementById(selectors.salaryRange + "-notes-textarea").value;
-                    updateJobInfo(job);
-                }
-
-                div.append(notesTextArea);
-                div.append(saveButton);
-
-                console.log('Save button added');
             }
+
+            if (!job.id) {
+                console.log('No cached job found.  Unable to add notes & tags.');
+                element.parentElement.before(div);
+                return;
+            }
+
+            const notesTextArea = document.createElement("textarea");
+            notesTextArea.id = selectors.salaryRange + "-notes-textarea";
+            notesTextArea.style.width = "100%";
+            notesTextArea.style.height = "100px";
+            notesTextArea.style.marginTop = "10px";
+            notesTextArea.placeholder = "Add notes here...";
+            notesTextArea.value = job.notes || "";
+
+            const saveButton = document.createElement("button");
+            saveButton.type = "button";
+            saveButton.className = "btn btn-primary save-button";
+            saveButton.id = selectors.salaryRange + "-notes-save-button";
+            saveButton.innerText = "Save";
+
+            saveButton.onclick = () => {
+                job.notes = document.getElementById(selectors.salaryRange + "-notes-textarea").value;
+                updateJobInfo(job);
+            }
+
+            div.append(notesTextArea);
+            div.append(saveButton);
+
+            console.log('Save button added');
+
 
             if (message) {
                 const messageSpan = document.createElement("span");
@@ -294,10 +302,14 @@ chrome.runtime.onMessage.addListener((request) => {
         console.log(`NOTES: ${request.result}`);
         request.result ? showSalary(request.result) : showSalary(null, "Error showing notes.");
     }
+
+    if (request.message === "log-error") {
+        console.error(request.result);
+    }
 });
 
 function updateJobInfo(job) {
-    console.log(`NOTES2: ${job}`);
+    console.log(`NOTES2: ${JSON.stringify(job)}`);
     chrome.runtime.sendMessage({
         message: "update-job-info",
         result: job,
